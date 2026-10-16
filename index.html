@@ -1,0 +1,209 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Personal IP Quick Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{color-scheme:light;--bg:#f4f1ea;--surface:#fffdf8;--ink:#241f1a;--muted:#7c746a;--line:#e6ddcd;--accent:#d5564e;--accent2:#1f7a5a;--gold:#c99a2e}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--bg:#17140f;--surface:#211c16;--ink:#efe7db;--muted:#a79c8c;--line:#352d22;--accent:#ef7a70;--accent2:#5bbd94;--gold:#e4b659}}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+.serif{font-family:"Fraunces",Georgia,serif}
+.wrap{max-width:680px;margin:0 auto;padding:clamp(18px,4vw,40px) clamp(16px,4vw,28px)}
+.eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px}
+h1{font-family:"Fraunces",serif;font-weight:700;font-size:clamp(26px,6vw,38px);line-height:1.1;margin:0 0 10px}
+.lede{color:var(--muted);margin:0 0 20px}
+label.fld{display:block;font-weight:600;margin:14px 0 6px}
+input.txt{width:100%;padding:13px 15px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font:inherit;font-size:1.05rem}
+input.txt:focus{outline:none;border-color:var(--accent)}
+.phase{display:flex;gap:10px;margin-top:6px}
+.phase button{flex:1;padding:14px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;font:inherit;font-weight:600;cursor:pointer}
+.phase button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 16px 10px;margin:14px 0;box-shadow:0 1px 2px rgba(40,30,20,.04),0 8px 22px rgba(40,30,20,.05)}
+.q .n{font-weight:700;margin:0 0 10px}
+.opt{display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--line);border-radius:11px;padding:11px 13px;margin-bottom:8px;cursor:pointer;background:var(--bg)}
+.opt:hover{border-color:var(--accent)}
+.opt.sel{background:var(--accent);border-color:var(--accent);color:#fff}
+.opt .k{font-weight:700;opacity:.7}
+.opt.correct{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.opt.wrong{background:#efe0de;border-color:var(--accent);color:var(--accent)}
+.bar-submit{position:sticky;bottom:0;background:linear-gradient(to top,var(--bg) 72%,transparent);padding:16px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px 26px;font:inherit;font-weight:700;font-size:1.05rem;cursor:pointer}
+.btn:disabled{opacity:.5}
+.btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--line)}
+.prog{color:var(--muted);font-size:14px}
+.scorecard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px;text-align:center;box-shadow:0 1px 2px rgba(40,30,20,.04),0 8px 22px rgba(40,30,20,.05)}
+.scorecard .big{font-family:"Fraunces",serif;font-size:64px;font-weight:700;color:var(--accent);line-height:1}
+.scorecard .sub{color:var(--muted);margin-top:6px}
+/* results */
+.tiles{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0}
+.tile{flex:1;min-width:120px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;text-align:center}
+.tile .v{font-family:"Fraunces",serif;font-size:34px;font-weight:700}
+.tile .l{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.tile.pre .v{color:var(--muted)}.tile.post .v{color:var(--accent2)}.tile.gain .v{color:var(--accent)}
+.chart{display:flex;gap:28px;align-items:flex-end;height:220px;padding:16px 20px;background:var(--surface);border:1px solid var(--line);border-radius:16px;margin:12px 0}
+.col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.col .barv{width:70%;max-width:120px;border-radius:10px 10px 0 0;transition:height .6s ease}
+.col .cap{margin-top:8px;font-weight:600;font-size:14px}
+.col .num{font-family:"Fraunces",serif;font-weight:700;margin-bottom:4px}
+table{width:100%;border-collapse:collapse;margin-top:8px;font-size:14.5px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line)}
+th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+td.g{font-weight:700;color:var(--accent2)}td.g.neg{color:var(--accent)}
+#qr{width:150px;height:150px;background:#fffdf8;border-radius:14px;padding:8px}
+#qr img,#qr canvas{width:100%!important;height:100%!important;display:block}
+.join{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.url{font-size:13px;color:var(--muted);word-break:break-all}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;opacity:0;transition:.2s;pointer-events:none}
+.toast.show{opacity:1}
+.foot{color:var(--muted);font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-top:26px}
+</style></head><body>
+
+<!-- PARTICIPANT -->
+<div id="take" class="wrap" hidden>
+  <p class="eyebrow">Hello Star Academy · Personal IP</p>
+  <h1 class="serif">Quick Check</h1>
+  <p class="lede">10 quick questions — same set before and after the class, so we can see how much you grew. No stress; just pick your best guess.</p>
+  <label class="fld">Your name or nickname</label>
+  <input class="txt" id="name" placeholder="e.g. Mei, or Table 3 Alex" maxlength="80" autocomplete="off">
+  <label class="fld">When are you taking this?</label>
+  <div class="phase">
+    <button type="button" id="pre" data-p="pre">Before the class</button>
+    <button type="button" id="post" data-p="post">After the class</button>
+  </div>
+  <div id="qs"></div>
+  <div class="bar-submit">
+    <button class="btn" id="submit">Submit</button>
+    <span class="prog" id="prog"></span>
+  </div>
+  <div id="done" hidden></div>
+  <p class="foot">Hello Star Academy · Gen AI · MCN</p>
+</div>
+
+<!-- RESULTS -->
+<div id="results" class="wrap" hidden>
+  <p class="eyebrow">Live Results</p>
+  <h1 class="serif">How far we grew</h1>
+  <div class="join"><div id="qr"></div><div><div style="font-weight:700">Scan to take the check</div><div class="url" id="url"></div></div></div>
+  <div class="tiles">
+    <div class="tile pre"><div class="v" id="avgPre">–</div><div class="l">Avg · Before</div></div>
+    <div class="tile post"><div class="v" id="avgPost">–</div><div class="l">Avg · After</div></div>
+    <div class="tile gain"><div class="v" id="gain">–</div><div class="l">Avg Gain</div></div>
+  </div>
+  <div class="chart">
+    <div class="col"><div class="num" id="nPre">0</div><div class="barv" id="barPre" style="height:0;background:var(--muted)"></div><div class="cap">Before</div></div>
+    <div class="col"><div class="num" id="nPost">0</div><div class="barv" id="barPost" style="height:0;background:var(--accent2)"></div><div class="cap">After</div></div>
+  </div>
+  <table><thead><tr><th>Name</th><th>Before</th><th>After</th><th>Gain</th></tr></thead><tbody id="tbody"></tbody></table>
+  <div class="bar-submit"><button class="btn ghost" id="refresh">↻ Refresh</button><button class="btn ghost" id="reset">Reset data</button></div>
+  <p class="foot">Hello Star Academy · Gen AI · MCN</p>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+var SB_URL="https://wenwjbrttkvxqgwcnqjp.supabase.co";
+var SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlbndqYnJ0dGt2eHFnd2NucWpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1NTI1MjYsImV4cCI6MjA5MjEyODUyNn0.lI6vEY98u2AgCf8QjrHn5yt4OhT3L1genteFP6Itiow";
+var client=window.supabase.createClient(SB_URL,SB_KEY);
+var Q=[
+ {q:"What does a 'niche' mean for a content creator?",o:["Posting about many random topics","The specific topic / angle and audience you focus on","The type of camera you use","Your number of followers"],a:1},
+ {q:"A Personal IP (个人 IP) means…",o:["A copyright certificate","Being instantly recognizable — 'the ___ person'","Having a verified blue tick","Simply posting every day"],a:1},
+ {q:"In the STAR framework, STAR stands for:",o:["Storyteller · Tech-native · Audio artist · Radiant","Smart · Talented · Active · Real","Story · Trend · Algorithm · Reach","Social · Target · Audience · Reach"],a:0},
+ {q:"How long do you have to hook a viewer's attention?",o:["The first 30 seconds","The first 10 seconds","The first ~3 seconds","The first minute"],a:2},
+ {q:"A 'signature' that makes you recognizable is…",o:["A fixed hook, visual, catchphrase and format","Posting at random times","Copying every trend exactly","A different style in every video"],a:0},
+ {q:"Uncle Roger (orange polo + 'Haiyaa') is an example of:",o:["真我型 — amplify the real you","角色型 — a clear character","No personal brand","A faceless account"],a:1},
+ {q:"黑皮哥 培永 turning a teased trait into his name is:",o:["角色型 — a character","真我型 — amplify the real you / claim your label","Buying followers","A paid advertisement"],a:1},
+ {q:"Why is a repeatable SERIES better than one viral video?",o:["It isn't — one viral video is enough","It's sustainable and builds a recognizable IP over time","A series costs more money","The algorithm bans single videos"],a:1},
+ {q:"The 80/20 content rule means:",o:["Post 80% of the time, rest 20%","80% give value / solve a problem, 20% promote","80% promote, 20% give value","80% photos, 20% video"],a:1},
+ {q:"A good bio should clearly tell people…",o:["Your age and location only","Who you help and what you do ('I help ___ do ___')","Your favourite colour","Nothing — keep it mysterious"],a:1}
+];
+var LETTERS=["A","B","C","D"];
+var isResults=(location.hash==="#results");
+document.getElementById(isResults?"results":"take").hidden=false;
+var toastT;function toast(m){var e=document.getElementById("toast");e.textContent=m;e.classList.add("show");clearTimeout(toastT);toastT=setTimeout(function(){e.classList.remove("show")},2400);}
+
+/* ---------- PARTICIPANT ---------- */
+if(!isResults){
+ var phase=null, answers={}, submitted=false;
+ document.getElementById("pre").onclick=function(){setPhase("pre")};
+ document.getElementById("post").onclick=function(){setPhase("post")};
+ function setPhase(p){phase=p;document.getElementById("pre").classList.toggle("on",p==="pre");document.getElementById("post").classList.toggle("on",p==="post");}
+ var qs=document.getElementById("qs");
+ Q.forEach(function(item,qi){
+  var card=document.createElement("div");card.className="q";
+  var t=document.createElement("p");t.className="n";t.textContent=(qi+1)+". "+item.q;card.appendChild(t);
+  item.o.forEach(function(opt,oi){
+   var row=document.createElement("div");row.className="opt";row.dataset.qi=qi;row.dataset.oi=oi;
+   row.innerHTML='<span class="k">'+LETTERS[oi]+'</span><span>'+opt+'</span>';
+   row.onclick=function(){if(submitted)return;answers[qi]=oi;[].forEach.call(card.querySelectorAll(".opt"),function(c){c.classList.toggle("sel",c.dataset.oi==String(oi));});updateProg();};
+   card.appendChild(row);
+  });
+  qs.appendChild(card);
+ });
+ function updateProg(){var n=Object.keys(answers).length;document.getElementById("prog").textContent=n+" / 10 answered";}
+ updateProg();
+ document.getElementById("submit").onclick=function(){
+  if(submitted)return;
+  var name=(document.getElementById("name").value||"").trim();
+  if(!name){toast("Please add your name first");document.getElementById("name").focus();return;}
+  if(!phase){toast("Pick Before or After the class");return;}
+  if(Object.keys(answers).length<10){toast("Answer all 10 first ("+Object.keys(answers).length+"/10)");return;}
+  var score=0;Q.forEach(function(it,qi){if(answers[qi]===it.a)score++;});
+  submitted=true;document.getElementById("submit").disabled=true;
+  client.from("ip_quiz_results").insert({name:name,phase:phase,score:score}).then(function(r){
+   // reveal correct/wrong
+   [].forEach.call(document.querySelectorAll(".q"),function(card,qi){
+    [].forEach.call(card.querySelectorAll(".opt"),function(c){
+     var oi=+c.dataset.oi;c.classList.remove("sel");
+     if(oi===Q[qi].a)c.classList.add("correct");
+     else if(answers[qi]===oi)c.classList.add("wrong");
+    });
+   });
+   var d=document.getElementById("done");d.hidden=false;
+   d.innerHTML='<div class="scorecard"><div class="big">'+score+'/10</div><div class="sub">'+(phase==="pre"?"That's your BEFORE score — now enjoy the class! You’ll take it again after.":"That’s your AFTER score — compare it to before and see how far you grew. 💪")+'</div></div>';
+   d.scrollIntoView({behavior:"smooth",block:"center"});
+   window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
+  }).catch(function(){submitted=false;document.getElementById("submit").disabled=false;toast("Could not submit — check connection");});
+ };
+}
+
+/* ---------- RESULTS ---------- */
+if(isResults){
+ var joinUrl=location.origin+location.pathname;
+ document.getElementById("url").textContent=joinUrl.replace("https://","");
+ try{new window.QRCode(document.getElementById("qr"),{text:joinUrl,width:300,height:300,colorDark:"#241f1a",colorLight:"#fffdf8",correctLevel:window.QRCode.CorrectLevel.H});}catch(e){}
+ function render(rows){
+  var pre=rows.filter(function(r){return r.phase==="pre"});
+  var post=rows.filter(function(r){return r.phase==="post"});
+  var avg=function(a){return a.length?a.reduce(function(s,r){return s+r.score},0)/a.length:null;};
+  var aPre=avg(pre),aPost=avg(post);
+  document.getElementById("avgPre").textContent=aPre==null?"–":aPre.toFixed(1);
+  document.getElementById("avgPost").textContent=aPost==null?"–":aPost.toFixed(1);
+  document.getElementById("gain").textContent=(aPre!=null&&aPost!=null)?("+"+(aPost-aPre).toFixed(1)):"–";
+  document.getElementById("nPre").textContent=pre.length;
+  document.getElementById("nPost").textContent=post.length;
+  document.getElementById("barPre").style.height=((aPre||0)/10*170)+"px";
+  document.getElementById("barPost").style.height=((aPost||0)/10*170)+"px";
+  // latest score per name+phase
+  function latest(a){var m={};a.forEach(function(r){var k=r.name.trim().toLowerCase();if(!m[k]||r.id>m[k].id)m[k]=r;});return m;}
+  var mp=latest(pre),mo=latest(post);
+  var names={};Object.keys(mp).forEach(function(k){names[k]=1});Object.keys(mo).forEach(function(k){names[k]=1});
+  var rowsout=Object.keys(names).map(function(k){var p=mp[k],o=mo[k];return {name:(o||p).name,pre:p?p.score:null,post:o?o.score:null};});
+  rowsout.sort(function(x,y){var gx=(x.post!=null&&x.pre!=null)?x.post-x.pre:-99;var gy=(y.post!=null&&y.pre!=null)?y.post-y.pre:-99;return gy-gx;});
+  var tb=document.getElementById("tbody");tb.innerHTML="";
+  rowsout.forEach(function(r){
+   var g=(r.pre!=null&&r.post!=null)?(r.post-r.pre):null;
+   var tr=document.createElement("tr");
+   tr.innerHTML='<td>'+esc(r.name)+'</td><td>'+(r.pre==null?"–":r.pre)+'</td><td>'+(r.post==null?"–":r.post)+'</td><td class="g '+(g!=null&&g<0?"neg":"")+'">'+(g==null?"–":(g>=0?"+":"")+g)+'</td>';
+   tb.appendChild(tr);
+  });
+ }
+ function esc(s){return String(s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
+ function load(){client.from("ip_quiz_results").select("*").order("created_at",{ascending:true}).then(function(res){render(res.data||[]);});}
+ load();
+ client.channel("ipq").on("postgres_changes",{event:"*",schema:"public",table:"ip_quiz_results"},function(){load();}).subscribe();
+ document.getElementById("refresh").onclick=load;
+ var armed=false,rb=document.getElementById("reset");
+ rb.onclick=function(){if(!armed){armed=true;rb.textContent="Tap again to delete ALL";setTimeout(function(){armed=false;rb.textContent="Reset data";},3000);return;}armed=false;rb.textContent="Reset data";client.from("ip_quiz_results").delete().gte("id",0).then(function(){load();toast("Cleared");});};
+}
+</script>
+</body></html>
