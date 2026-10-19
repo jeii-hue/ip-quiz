@@ -93,7 +93,8 @@ td.g{font-weight:700;color:var(--accent2)}td.g.neg{color:var(--accent)}
     <div class="col"><div class="num" id="nPost">0</div><div class="barv" id="barPost" style="height:0;background:var(--accent2)"></div><div class="cap">After</div></div>
   </div>
   <table><thead><tr><th>Name</th><th>Before</th><th>After</th><th>Gain</th></tr></thead><tbody id="tbody"></tbody></table>
-  <div class="bar-submit"><button class="btn ghost" id="refresh">↻ Refresh</button><button class="btn ghost" id="reset">Reset data</button></div>
+  <p class="url" id="counts" style="margin-top:10px"></p>
+  <div class="bar-submit"><button class="btn ghost" id="refresh">↻ Refresh</button><button class="btn ghost" id="csv">⬇ Export CSV</button><button class="btn ghost" id="reset">Reset data</button></div>
   <p class="foot">Hello Star Academy · Gen AI · MCN</p>
 </div>
 
@@ -171,7 +172,9 @@ if(isResults){
  var joinUrl=location.origin+location.pathname;
  document.getElementById("url").textContent=joinUrl.replace("https://","");
  try{new window.QRCode(document.getElementById("qr"),{text:joinUrl,width:300,height:300,colorDark:"#241f1a",colorLight:"#fffdf8",correctLevel:window.QRCode.CorrectLevel.H});}catch(e){}
+ var allRows=[];
  function render(rows){
+  allRows=rows;
   var pre=rows.filter(function(r){return r.phase==="pre"});
   var post=rows.filter(function(r){return r.phase==="post"});
   var avg=function(a){return a.length?a.reduce(function(s,r){return s+r.score},0)/a.length:null;};
@@ -196,12 +199,25 @@ if(isResults){
    tr.innerHTML='<td>'+esc(r.name)+'</td><td>'+(r.pre==null?"–":r.pre)+'</td><td>'+(r.post==null?"–":r.post)+'</td><td class="g '+(g!=null&&g<0?"neg":"")+'">'+(g==null?"–":(g>=0?"+":"")+g)+'</td>';
    tb.appendChild(tr);
   });
+  var done=rowsout.filter(function(r){return r.pre!=null&&r.post!=null}).length;
+  document.getElementById("counts").textContent=pre.length+" Before · "+post.length+" After · "+rowsout.length+" people · "+done+" did both (matched by name)";
  }
  function esc(s){return String(s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
  function load(){client.from("ip_quiz_results").select("*").order("created_at",{ascending:true}).then(function(res){render(res.data||[]);});}
  load();
  client.channel("ipq").on("postgres_changes",{event:"*",schema:"public",table:"ip_quiz_results"},function(){load();}).subscribe();
  document.getElementById("refresh").onclick=load;
+ document.getElementById("csv").onclick=function(){
+  if(!allRows.length){toast("No results yet");return;}
+  var rows=[["name","phase","score","submitted_at"]].concat(allRows.map(function(r){
+   return [r.name,r.phase,r.score,new Date(r.created_at).toLocaleString()];
+  }));
+  var csv=rows.map(function(row){return row.map(function(c){var s=String(c==null?"":c);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(",");}).join("\n");
+  var blob=new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"});
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="ip-quiz-results-"+new Date().toISOString().slice(0,10)+".csv";
+  document.body.appendChild(a);a.click();a.remove();
+ };
  var armed=false,rb=document.getElementById("reset");
  rb.onclick=function(){if(!armed){armed=true;rb.textContent="Tap again to delete ALL";setTimeout(function(){armed=false;rb.textContent="Reset data";},3000);return;}armed=false;rb.textContent="Reset data";client.from("ip_quiz_results").delete().gte("id",0).then(function(){load();toast("Cleared");});};
 }
